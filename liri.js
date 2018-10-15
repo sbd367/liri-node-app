@@ -209,4 +209,4 @@ else if (command === "do-what-it-says"){
     })
  
 }
-
+spotit();
