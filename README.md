@@ -1,11 +1,17 @@
 # liri-node-app
 
-## setup
+## Setup
 To setup the app locally 
-1. clone the repo
-2. inside of the root dir create a `.env` file with both your spotify id and secret credentials (as seen [here](https://github.com/sbd367/liri-node-app/blob/master/key.js)).
-3. `npm install`
+1. Clone the repo
+2. Inside of the root dir create a `.env` file with both, your Spotify id, and secret credentials.
+>The credentials in your `.env` should have the same key name as shown here
+![spotify_usage](https://user-images.githubusercontent.com/12818787/144783839-f9bd29a1-c300-44f4-8ab5-3666b61704c1.png)
+4. `npm install`
 
-> to make a search, run node, and enter one of the following commands (spotify-this-song, concert-this, movie-this, and do-what-it-says) followed by your search term. Limited to three words.
+## Usage
+
+Now to make a search, you can simply run something like this `node liri.js {command}{args}`
+>There are currently 4 commands that you can run (`do-what-it-says`, `movie-this`, `concert-this`, `spotify-this-song`)\
+>Each of these requests will return relevent data from each api called.
 
 [Link to screenshots](https://imgur.com/a/baanpOz)
