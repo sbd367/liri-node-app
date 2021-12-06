@@ -1,59 +1,19 @@
 require("dotenv").config();
 
 //Bring in required
-const keys = require("./key");
+const Spotify = require("node-spotify-api"),
+ fs = require("fs"),
+ opn = require('opn'),
+ request = require("request"),
+ moment = require("moment"),
+ argumentArray = process.argv;
 
-var spotify = require("node-spotify-api");
+ let bs = '', command = '';
+ argumentArray.forEach(arg => bs+=`${arg} `);
+ bs = bs.trim();
+ The_Thing = bs;
 
-const fs = require("fs");
-
-const opn = require('opn');
-
-var request = require("request");
-
-var moment = require("moment");
-
-// Adds arguments together to make up search
-if(process.argv[2]){
-
-var command = process.argv[2];
-
-console.log("your command is "+ command);
-
-}else{
-
-    console.log("You need to add a command");
-}
-
-if(process.argv[3]){
-
-    var First_Word = process.argv[3];
-    var The_Thing = First_Word;
-}
-if(process.argv[4]){
-
-var Second_Word = process.argv[4];
-
-The_Thing = The_Thing +" "+ Second_Word
-
-}else{
-    console.log("no second word")
-}
-
-if(process.argv[5]){
-
-var Third_Word = process.argv[5];
-
-The_Thing = 
-
-First_Word+" "+
-Second_Word+" "+
-Third_Word
-
-}else{
-    console.log("no third word");
-}
-
+ !process.argv[2] ? console.log("You need to add a command") : command = process.argv[2];
 
 // Handles Spotify API
 function spotit (){
@@ -63,42 +23,39 @@ if(command === "spotify-this-song"){
     if(!process.argv[3]){
         The_Thing = "Swag Surfin'"
     }
-    console.log("you want to sarch for "+The_Thing);
+    console.log("Searching for "+The_Thing);
 
-    spotify = new spotify({
-        id: keys.spotify.id,
-        secret: keys.spotify.secret
-    });
-
-    //starts search
-    spotify.search({type: "track", query: The_Thing, limit: 1}, function(error, data){
-
+    new Spotify({
+        id: process.env.SPOTIFY_API_ID,
+        secret: process.env.SPOTIFY_API_SECRET
+    }).search({type: "track", query: The_Thing, limit: 1}, (error, data) => {
     //if theres an error, log it
     if(error){
-        return console.log("ERROR"+error);
+        console.warn('Error while connecting to spotify');
+        throw new Error(error);
     }
+    const {items} = data.tracks;
     
     //if theres search data display it
     if(data.tracks.items[0]){
+        let bs = "",
+            Artist = items[0].artists[0].name,
+            Song_Album = items[0].album.name,
+            Song_Name = items[0].name,
+            Song_url = items[0].external_urls.spotify;
 
-        console.log("------Spotify Results------")
-        
-        var Artist = (data.tracks.items[0].artists[0].name);
-        console.log("Artist: " + Artist);
-
-        var Song_Album = (data.tracks.items[0].album.name);
-        console.log("Album: " + Song_Album);
-
-        var Song_Name = (data.tracks.items[0].name);
-        console.log("Song Name: " + Song_Name);
-
-        var Song_url = data.tracks.items[0].external_urls.spotify;
-        console.log("Song Url: "+Song_url);
+        bs+=`
+        ------Spotify Results------
+        Artist: ${Artist}
+        Song Name: ${Song_Name}
+        Album Name: ${Song_Album}
+        Song URL: ${Song_url}
+        ------ End Results ------`;
+        //opens a new window with the song url
         opn(Song_url);
-        console.log("------ End Results ------")
-
+        console.log(bs);
     }
-    // if theres no data tell user they fkd up the search
+    // if theres no data tell user they did it wrong
     else{
 
         console.log("you did something wrong");
@@ -117,28 +74,29 @@ if(command === "concert-this"){
     console.log("you want to sarch for "+The_Thing);
 
 
-    request("https://rest.bandsintown.com/artists/" + The_Thing + "/events?app_id=codingbootcamp", function (error, response, body){
+    request("https://rest.bandsintown.com/artists/" + The_Thing + "/events?app_id=codingbootcamp",  (error, response, body) => {
+        if(error){
+            throw new Error(error);
+        }
 
-    if(error){
-        console.log("Something went wrong: "+error);
-    }
+        const data = JSON.parse(body)[0];
 
-    //Assign variables
-    var venue_name = JSON.parse(body)[0].venue.name;
-    var venue_Location = JSON.parse(body)[0].venue.city;
-    var event_date = JSON.parse(body)[0].datetime;
-
+        //Assign variables
+        let venue_name = data.venue.name,
+        venue_location = data.venue.city,
+        event_date = data.datetime,
+        bs = '';
         //Format Date with moment
         event_date = moment(event_date).format("MM/DD/YYYY");
 
         //Display Results
-        console.log("------Concert Results------");
-
-        console.log("Venue Name: " + venue_name);
-        console.log("Venue Location: " + venue_Location);
-        console.log("Date: " + event_date);
-
-        console.log("------- End Results -------");
+        bs+=`
+        ------Concert Results------
+        Venue Name: ${venue_name}
+        Venue Location: ${venue_location}
+        Date: ${event_date}
+        ------- End Results -------`;
+        console.log(bs);
     })
 }
 
@@ -148,47 +106,50 @@ else if(command === "movie-this"){
     if(!process.argv[3]){
         The_Thing = "Mr. Nobody"
     }
-    console.log("you want to sarch for "+The_Thing);
+    console.log("Searching for "+The_Thing);
 
     //Makes request
-    request("http://www.omdbapi.com/?t="+ The_Thing +"&y=&plot=short&apikey=trilogy", function(error, response, body){
+    request("http://www.omdbapi.com/?t="+ The_Thing +"&y=&plot=short&apikey=trilogy", (error, response, body) => {
 
     //Logs an error
         if(error){
             console.log("an error occured: "+error);
         }
 
+        const data = JSON.parse(body);
+
         //Making variables for all of the things
-        var Movie_Title = JSON.parse(body).Title;
-        var Release_Year = JSON.parse(body).Year;
-        var IMBD_Rating = JSON.parse(body).Ratings[0].Value;  
-        var Rotten_Tomatoes = JSON.parse(body).Ratings[1].Value;
-        var country = JSON.parse(body).Country;
-        var Movie_Language =  JSON.parse(body).Language;
-        var Plot = JSON.parse(body).Plot;
-        var Actors =  JSON.parse(body).Actors; 
+        let  Movie_Title = data.Title,
+         Release_Year = data.Year,
+         IMBD_Rating = data.Ratings[0].Value,  
+         Rotten_Tomatoes = data.Ratings[1].Value,
+         country = data.Country,
+         Movie_Language =  data.Language,
+         Plot = data.Plot,
+         Actors =  data.Actors,
+         bs = ''; 
 
         //Displays results
-        console.log("------Movie Results------");
+        bs+=`
+        ------Movie Results------
+        Movie Title: ${Movie_Title}
+        Release Year: ${Release_Year}
+        IMBD Rating: ${IMBD_Rating}
+        Rotten Tomatoes Score: ${Rotten_Tomatoes}
+        Country Produced: ${country}
+        Language: ${Movie_Language}
+        Plot: ${Plot}
+        Actors: ${Actors}
+        ------ End Results ------`;
 
-        console.log("Movie Title: "+Movie_Title);
-        console.log("Release Year: "+Release_Year);
-        console.log("IMBD Rating: "+IMBD_Rating);
-        console.log("Rotton Tomatoes Score : " + Rotten_Tomatoes);
-        console.log("Country Produced: " + country);
-        console.log("Language: " + Movie_Language);
-        console.log("Plot: "+Plot);
-        console.log("Actors: " + Actors);
-
-        console.log("------ End Results ------");
-
+        console.log(bs);
     })
 }
 
 else if (command === "do-what-it-says"){
 
     //reads txt file
-    fs.readFile("random.txt", "utf8", function (error, Data){
+    fs.readFile("random.txt", "utf8", (error, Data) => {
 
         //if theres an error log it
         if(error){

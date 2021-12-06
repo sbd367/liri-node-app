@@ -1,9 +1,11 @@
 {
   "name": "liri-node-app",
   "version": "1.0.0",
-  "description": "",
+  "description": "This is a node application which takes commands and responds via API calls to either spotify or bands in town.",
   "main": "key.js",
   "scripts": {
+    "search_song": "node liri.js spotify-this-song",
+    "search_bands": "node liri.js concert-this",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
